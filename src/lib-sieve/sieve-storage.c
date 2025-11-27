@@ -773,6 +773,7 @@ int sieve_storage_create_personal(struct sieve_instance *svinst,
 					&storage, error_code_r, NULL);
 	if (ret == 0) {
 		(void)sieve_storage_sync_init(storage, user);
+		storage->is_personal = TRUE;
 	} else if (*error_code_r != SIEVE_ERROR_TEMP_FAILURE &&
 		   (flags & SIEVE_STORAGE_FLAG_SYNCHRONIZING) == 0 &&
 		   (flags & SIEVE_STORAGE_FLAG_READWRITE) == 0) {
@@ -1017,7 +1018,7 @@ sieve_storage_get_default_script(struct sieve_storage *storage,
 
 	if (*error_code_r != SIEVE_ERROR_NOT_FOUND ||
 	    (storage->flags & SIEVE_STORAGE_FLAG_SYNCHRONIZING) != 0 ||
-	    !sieve_storage_is_personal(storage))
+	    !storage->is_personal)
 		return -1;
 
 	/* Not found; if this name maps to the default script,
@@ -1152,6 +1153,8 @@ sieve_storage_active_script_do_get_name(struct sieve_storage *storage,
 {
 	int ret;
 
+	i_assert(storage->is_personal);
+
 	if (default_r != NULL)
 		*default_r = FALSE;
 
@@ -1209,6 +1212,7 @@ int sieve_storage_active_script_is_default(struct sieve_storage *storage)
 	bool is_default = FALSE;
 	int ret;
 
+	i_assert(storage->is_personal);
 	ret = sieve_storage_active_script_do_get_name(storage, &name,
 						      &is_default);
 	return (ret < 0 ? -1 : (is_default ? 1 : 0));
@@ -1220,6 +1224,13 @@ int sieve_storage_active_script_open(struct sieve_storage *storage,
 {
 	struct sieve_script *script = NULL;
 	int ret;
+
+	/* When called for non-personal (default) storage, just open the primary
+	   script by explicit path or name. */
+	if (!storage->is_personal) {
+		return sieve_storage_open_script(storage, NULL,
+						 script_r, error_code_r);
+	}
 
 	*script_r = NULL;
 	sieve_error_args_init(&error_code_r, NULL);
@@ -1260,6 +1271,7 @@ int sieve_storage_deactivate(struct sieve_storage *storage, time_t mtime)
 {
 	int ret;
 
+	i_assert(storage->is_personal);
 	i_assert((storage->flags & SIEVE_STORAGE_FLAG_READWRITE) != 0);
 
 	sieve_storage_clear_error(storage);
@@ -1293,6 +1305,7 @@ int sieve_storage_deactivate(struct sieve_storage *storage, time_t mtime)
 int sieve_storage_active_script_get_last_change(struct sieve_storage *storage,
 						time_t *last_change_r)
 {
+	i_assert(storage->is_personal);
 	i_assert(storage->v.active_script_get_last_change != NULL);
 
 	return storage->v.active_script_get_last_change(storage, last_change_r);
