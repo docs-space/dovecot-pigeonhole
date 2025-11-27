@@ -10,7 +10,7 @@ sudo apt-get install -y \
   liblua5.3-dev libxapian-dev libstemmer-dev libsasl2-dev libicu-dev krb5-multidev libdb-dev libcurl4-gnutls-dev libexpat-dev libexttextcat-dev default-libmysqlclient-dev \
   libpcre3-dev libcdb-dev liblzma-dev liblmdb-dev libunbound-dev libmagic-dev
 
-cd $2/Pack/Temp && unzip r7mdaserver_*.zip -d $BUILD_DIRECTORY && cd $2
+cd $2/Pack/Temp && unzip src_dovecot_*.zip && unzip r7mdaserver_*.zip -d $BUILD_DIRECTORY && cd $2
 
 #Переменная окружения:
 CFLAGS="$CFLAGS -ffile-prefix-map=$PWD=." LDFLAGS="$LDFLAGS" CXXFLAGS="$CFLAGS -ffile-prefix-map=$PWD=. "
@@ -27,11 +27,10 @@ sudo make distclean || true
 sudo ./autogen.sh $VERSION
 
 ## Конфигурирование пакетов
-sudo ./configure --with-dovecot=$BUILD_DIRECTORY \
+sudo ./configure --with-dovecot=$2/Pack/Temp \
 --with-managesieve=yes \
 --prefix=$BUILD_DIRECTORY \
---exec-prefix=$BUILD_DIRECTORY \
---without-systemd
+--exec-prefix=$BUILD_DIRECTORY
 
 ##Компоновка
 sudo make -j V=0
