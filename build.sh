@@ -10,7 +10,7 @@ sudo apt-get install -y \
   liblua5.3-dev libxapian-dev libstemmer-dev libsasl2-dev libicu-dev krb5-multidev libdb-dev libcurl4-gnutls-dev libexpat-dev libexttextcat-dev default-libmysqlclient-dev \
   libpcre3-dev libcdb-dev liblzma-dev liblmdb-dev libunbound-dev libmagic-dev
 
-cd $1/Pack/Temp && unzip r7mdaserver_*.zip && cd $1
+cd $2/Pack/Temp && unzip r7mdaserver_*.zip && cd $2
 
 #Переменная окружения:
 CFLAGS="$CFLAGS -ffile-prefix-map=$PWD=." LDFLAGS="$LDFLAGS" CXXFLAGS="$CFLAGS -ffile-prefix-map=$PWD=. "
