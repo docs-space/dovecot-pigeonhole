@@ -10,4 +10,4 @@ for dir in $GETTEXT_DIR /usr/share/gettext; do
   fi
 done
 
-autoreconf -vif
+VERSION=$1 autoreconf -vif
