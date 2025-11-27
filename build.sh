@@ -28,6 +28,7 @@ sudo ./autogen.sh $VERSION
 
 ## Конфигурирование пакетов
 sudo ./configure --with-dovecot=Pack/Temp \
+--with-managesieve=yes \
 --prefix=$BUILD_DIRECTORY \
 --exec-prefix=$BUILD_DIRECTORY \
 --without-systemd
