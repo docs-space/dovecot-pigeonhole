@@ -44,13 +44,13 @@ sudo make install-strip
 #  useradd --system dovecot
 #  useradd --system dovenull
 #  useradd --system vmail
-sudo mkdir -p "$BUILD_DIRECTORY/ssl"
-sudo openssl genrsa -out "$BUILD_DIRECTORY/ssl/private.key" 2048
-sudo openssl req -new -x509 -key "$BUILD_DIRECTORY/ssl/private.key" -out "$BUILD_DIRECTORY/ssl/certificate.crt" -days 365 -subj "/C=RU/ST=Moscow/L=Moscow/O=Company/CN=localhost"
-sudo chmod 600 "$BUILD_DIRECTORY/ssl/private.key"
-sudo chmod 644 "$BUILD_DIRECTORY/ssl/certificate.crt"
-sudo sed -i "s|cert_file = /etc/ssl/dovecot-build-cert.pem|cert_file = $BUILD_DIRECTORY/ssl/certificate.crt|" $BUILD_DIRECTORY/etc/dovecot/dovecot.conf
-sudo sed -i "s|key_file = /etc/ssl/dovecot-build-key.pem|key_file = $BUILD_DIRECTORY/ssl/private.key|" $BUILD_DIRECTORY/etc/dovecot/dovecot.conf
+#sudo mkdir -p "$BUILD_DIRECTORY/ssl"
+#sudo openssl genrsa -out "$BUILD_DIRECTORY/ssl/private.key" 2048
+#sudo openssl req -new -x509 -key "$BUILD_DIRECTORY/ssl/private.key" -out "$BUILD_DIRECTORY/ssl/certificate.crt" -days 365 -subj "/C=RU/ST=Moscow/L=Moscow/O=Company/CN=localhost"
+#sudo chmod 600 "$BUILD_DIRECTORY/ssl/private.key"
+#sudo chmod 644 "$BUILD_DIRECTORY/ssl/certificate.crt"
+#sudo sed -i "s|cert_file = /etc/ssl/dovecot-build-cert.pem|cert_file = $BUILD_DIRECTORY/ssl/certificate.crt|" $BUILD_DIRECTORY/etc/dovecot/dovecot.conf
+#sudo sed -i "s|key_file = /etc/ssl/dovecot-build-key.pem|key_file = $BUILD_DIRECTORY/ssl/private.key|" $BUILD_DIRECTORY/etc/dovecot/dovecot.conf
 
 # Запуск демона
 #echo "Запустить собранный dovecot? (Y/n) [n]: "
