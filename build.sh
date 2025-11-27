@@ -27,7 +27,7 @@ sudo make distclean || true
 sudo ./autogen.sh $VERSION
 
 ## Конфигурирование пакетов
-sudo ./configure --with-dovecot=Pack/Temp \
+sudo ./configure --with-dovecot=$BUILD_DIRECTORY \
 --with-managesieve=yes \
 --prefix=$BUILD_DIRECTORY \
 --exec-prefix=$BUILD_DIRECTORY \
