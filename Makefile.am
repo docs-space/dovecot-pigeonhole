@@ -47,9 +47,14 @@ DISTCLEANFILES = \
     $(top_builddir)/pigeonhole-version.h \
 	$(top_builddir)/run-test.sh
 
+check-local:
+	rm -rf $(top_builddir)/.test
+clean-local:
+	rm -rf $(top_builddir)/.test
+
 # Testsuite tests (FIXME: ugly)
 
-TESTSUITE_BIN = $(top_builddir)/src/testsuite/testsuite $(TESTSUITE_OPTIONS)
+TESTSUITE_BIN = $(top_builddir)/src/testsuite/testsuite -W$(top_builddir)/.test $(TESTSUITE_OPTIONS)
 
 TEST_BIN = $(RUN_TEST) $(TESTSUITE_BIN)
 

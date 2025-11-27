@@ -38,6 +38,7 @@ Makefile.in
 /cc-wrapper.sh
 /pigeonhole-config.h
 /pigeonhole-version.h
+/.test
 
 /m4/libtool.m4
 /m4/ltoptions.m4
@@ -58,6 +59,7 @@ doc/man/sieve-filter.1
 doc/man/pigeonhole.7
 doc/stamp-man
 
+src/plugins/settings/settings-history-pigeonhole.h
 src/plugins/settings/pigeonhole-settings-dynamic.c
 
 src/sieve-tools/sievec

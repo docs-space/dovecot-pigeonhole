@@ -6,6 +6,7 @@
 #include "string.h"
 #include "ostream.h"
 #include "hash.h"
+#include "safe-mkstemp.h"
 #include "mail-storage.h"
 #include "env-util.h"
 #include "unlink-directory.h"
@@ -308,16 +309,20 @@ bool testsuite_testcase_result(bool expect_failure)
 
 static char *testsuite_tmp_dir;
 
-static void testsuite_tmp_dir_init(void)
+static void testsuite_tmp_dir_init(const char *tmp_path)
 {
-	testsuite_tmp_dir = i_strdup_printf("/tmp/dsieve-testsuite.%s.%s",
-					    dec2str(time(NULL)),
-					    dec2str(getpid()));
+	if (tmp_path == NULL)
+		tmp_path = "/tmp";
 
-	if (mkdir(testsuite_tmp_dir, 0700) < 0) {
-		i_fatal("failed to create temporary directory '%s': %m.",
-			testsuite_tmp_dir);
-	}
+	string_t *dir = t_str_new(256);
+	str_append(dir, tmp_path);
+	str_append_c(dir, '/');
+	str_append(dir, "sieve-testsuite");
+	str_append_c(dir, '-');
+
+	if (safe_mkstemp_dir_pid(dir, 0700) < 0)
+		i_fatal("safe_mkstemp_dir(%s) failed: %m", str_c(dir));
+	testsuite_tmp_dir = i_strdup(str_c(dir));
 }
 
 static void testsuite_tmp_dir_deinit(void)
@@ -342,7 +347,7 @@ const char *testsuite_tmp_dir_get(void)
  */
 
 void testsuite_init(struct sieve_instance *svinst, const char *test_path,
-		    bool log_stdout)
+		    const char *wdir_path, bool log_stdout)
 {
 	int ret;
 
@@ -350,7 +355,7 @@ void testsuite_init(struct sieve_instance *svinst, const char *test_path,
 
 	testsuite_test_context_init();
 	testsuite_log_init(log_stdout);
-	testsuite_tmp_dir_init();
+	testsuite_tmp_dir_init(wdir_path);
 
 	testsuite_script_init();
 	testsuite_binary_init();
