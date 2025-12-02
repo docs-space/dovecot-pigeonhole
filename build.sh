@@ -30,8 +30,8 @@ sudo ./autogen.sh $VERSION
 ## Конфигурирование пакетов
 sudo ./configure --with-dovecot=$DOVECOT_DIRECTORY \
 --with-managesieve=yes \
---prefix=$DOVECOT_DIRECTORY/Pack/src \
---exec-prefix=$DOVECOT_DIRECTORY/Pack/src
+--prefix=$DOVECOT_DIRECTORY/Pack/src/opt/r7mdaserver \
+--exec-prefix=$DOVECOT_DIRECTORY/Pack/src/opt/r7mdaserver
 
 ##Компоновка
 sudo make -j V=0
