@@ -1,6 +1,7 @@
 VERSION=$1
-BUILD_DIRECTORY=$2/Pack/src
+PACK_DIRECTORY=$3/Pack/src/opt/r7-mailserver/mdaserver
 DOVECOT_DIRECTORY=$3
+BUILD_DIRECTORY=/opt/r7-mailserver/mdaserver
 
 #Пакеты компилятора и зависимости
 sudo apt-get update -y && sudo apt-get install -y apt-utils && sudo apt-get install -y gettext-base gettext openssh-client ca-certificates pkg-config wget git coreutils ed
@@ -16,8 +17,8 @@ sudo apt-get install -y \
 #Переменная окружения:
 CFLAGS="$CFLAGS -ffile-prefix-map=$PWD=." LDFLAGS="$LDFLAGS" CXXFLAGS="$CFLAGS -ffile-prefix-map=$PWD=. "
 
-# Создание директории назначения
-sudo mkdir -p $BUILD_DIRECTORY
+# Создание директорий
+sudo mkdir -p $PACK_DIRECTORY $BUILD_DIRECTORY
 
 #Чистка предыдущей установки, если такая была
 sudo make distclean || true
@@ -30,8 +31,8 @@ sudo ./autogen.sh $VERSION
 ## Конфигурирование пакетов
 sudo ./configure --with-dovecot=$DOVECOT_DIRECTORY \
 --with-managesieve=yes \
---prefix=$DOVECOT_DIRECTORY/Pack/src/opt/r7mdaserver \
---exec-prefix=$DOVECOT_DIRECTORY/Pack/src/opt/r7mdaserver
+--prefix=$BUILD_DIRECTORY \
+--exec-prefix=$BUILD_DIRECTORY
 
 ##Компоновка
 sudo make -j V=0
@@ -39,6 +40,9 @@ sudo make -j V=0
 ## Сборка
 sudo make install-strip
 
+
+sudo cp -r $BUILD_DIRECTORY $PACK_DIRECTORY
+sudo rm -rf $BUILD_DIRECTORY/*
 
 # Добавление необходимых пользователей
 #  useradd --system dovecot
