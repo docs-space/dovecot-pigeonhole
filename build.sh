@@ -1,5 +1,5 @@
 VERSION=$1
-PACK_DIRECTORY=$3/Pack/src/opt/r7-mailserver/mdaserver
+PACK_DIRECTORY=$3/Pack/src/opt/r7-mailserver/
 DOVECOT_DIRECTORY=$3
 BUILD_DIRECTORY=/opt/r7-mailserver/mdaserver
 
