@@ -26,7 +26,8 @@ sudo make distclean || true
 #Сборка Ядра:
 
 ## Automake
-sudo ./autogen.sh $VERSION
+#sudo ./autogen.sh $VERSION
+sudo ./autogen.sh 2.4.2
 
 ## Конфигурирование пакетов
 sudo ./configure --with-dovecot=$DOVECOT_DIRECTORY \
