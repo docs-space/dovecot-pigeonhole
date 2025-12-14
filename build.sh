@@ -1,5 +1,5 @@
 VERSION=$1
-PACK_DIRECTORY=$3/Pack/src/opt/r7-mailserver/
+PACK_DIRECTORY=$3/Pack/src/opt/r7-mailserver
 DOVECOT_DIRECTORY=$3
 BUILD_DIRECTORY=/opt/r7-mailserver/mdaserver
 
@@ -42,8 +42,8 @@ sudo make -j V=0
 sudo make install-strip
 
 
-sudo cp -r $BUILD_DIRECTORY $PACK_DIRECTORY
-sudo rm -rf $BUILD_DIRECTORY/*
+sudo cp -r $BUILD_DIRECTORY $PACK_DIRECTORY/
+sudo rm -rf $BUILD_DIRECTORY
 
 # Добавление необходимых пользователей
 #  useradd --system dovecot
