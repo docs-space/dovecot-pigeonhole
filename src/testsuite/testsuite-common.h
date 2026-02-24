@@ -19,6 +19,7 @@ extern const struct sieve_script_env *testsuite_scriptenv;
 
 extern char *testsuite_test_path;
 
+extern unsigned int test_failures;
 
 /*
  * Validator context
@@ -180,14 +181,17 @@ bool testsuite_testcase_result(bool expect_failure);
  * Testsuite temporary directory
  */
 
+void testsuite_tmp_dir_deinit(void);
 const char *testsuite_tmp_dir_get(void);
 
 /*
- * Testsuite init/deinit
+ * Testsuite init/run/deinit
  */
 
 void testsuite_init(struct sieve_instance *svinst, const char *test_path,
 		    const char *wdir_path, bool log_stdout);
+int testsuite_run(struct sieve_binary *sbin,
+		  struct sieve_error_handler *ehandler);
 void testsuite_deinit(void);
 
 #endif

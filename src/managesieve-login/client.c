@@ -198,11 +198,17 @@ cmd_xclient(struct managesieve_client *msieve_client,
 		if (str_begins_icase(arg, "ADDR=", &value)) {
 			if (net_addr2ip(value, &client->ip) < 0)
 				args_ok = FALSE;
+		} else if (str_begins_icase(arg, "DESTADDR=", &value)) {
+			if (net_addr2ip(value, &client->local_ip) < 0)
+				args_ok = FALSE;
 		} else if (str_begins_icase(arg, "FORWARD=", &value)) {
 			if (!client_forward_decode_base64(client, value))
 				args_ok = FALSE;
 		} else if (str_begins_icase(arg, "PORT=", &value)) {
 			if (net_str2port(value, &client->remote_port) < 0)
+				args_ok = FALSE;
+		} else if (str_begins_icase(arg, "DESTPORT=", &value)) {
+			if (net_str2port(value, &client->local_port) < 0)
 				args_ok = FALSE;
 		} else if (str_begins_icase(arg, "SESSION=", &value)) {
 			if (strlen(value) <= LOGIN_MAX_SESSION_ID_LEN) {
@@ -228,6 +234,15 @@ cmd_xclient(struct managesieve_client *msieve_client,
 	}
 	if (!args_ok || !MANAGESIEVE_ARG_IS_EOL(&args[0]))
 		return -1;
+
+	const char *error;
+	if (client_addresses_changed(client, &error) < 0) {
+		client_send_reply_code(client, MANAGESIEVE_CMD_REPLY_NO,
+				       "TRYLATER/NORETRY",
+				       "Failed to reload configuration");
+		client_destroy(client, error);
+		return -1;
+	}
 
 	client_send_ok(client, "Updated");
 	return 1;

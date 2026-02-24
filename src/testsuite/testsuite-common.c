@@ -47,13 +47,17 @@
 
 struct sieve_instance *testsuite_sieve_instance = NULL;
 char *testsuite_test_path = NULL;
+unsigned int test_failures;
+
+unsigned int test_failures;
+
+static struct sieve_interpreter *testsuite_interp = NULL;
 
 /* Test context */
 
 static string_t *test_name;
 static sieve_size_t test_block_end;
 static unsigned int test_index;
-static unsigned int test_failures;
 
 /* Extension */
 
@@ -215,12 +219,19 @@ int testsuite_test_fail_cstr(const struct sieve_runtime_env *renv,
 		}
 	}
 
+	test_failures++;
+
+	if (end == 0)
+		return SIEVE_EXEC_FAILURE;
+	if (renv->interp != testsuite_interp) {
+		sieve_interpreter_interrupt(renv->interp);
+		return SIEVE_EXEC_OK;
+	}
+
 	str_truncate(test_name, 0);
 	test_block_end = 0;
 
-	test_failures++;
-
-	return sieve_interpreter_program_jump_to(renv->interp, end, FALSE);
+	return sieve_interpreter_program_jump_to(renv->interp, end, TRUE);
 }
 
 void testsuite_testcase_fail(const char *reason)
@@ -325,9 +336,12 @@ static void testsuite_tmp_dir_init(const char *tmp_path)
 	testsuite_tmp_dir = i_strdup(str_c(dir));
 }
 
-static void testsuite_tmp_dir_deinit(void)
+void testsuite_tmp_dir_deinit(void)
 {
 	const char *error;
+
+	if (testsuite_tmp_dir == NULL)
+		return;
 
 	if (unlink_directory(testsuite_tmp_dir,
 			     UNLINK_DIRECTORY_FLAG_RMDIR, &error) < 0)
@@ -343,7 +357,7 @@ const char *testsuite_tmp_dir_get(void)
 }
 
 /*
- * Main testsuite init/deinit
+ * Main testsuite init/run/deinit
  */
 
 void testsuite_init(struct sieve_instance *svinst, const char *test_path,
@@ -366,6 +380,28 @@ void testsuite_init(struct sieve_instance *svinst, const char *test_path,
 	i_assert(ret == 0);
 
 	testsuite_test_path = i_strdup(test_path);
+}
+
+int testsuite_run(struct sieve_binary *sbin,
+		  struct sieve_error_handler *ehandler)
+{
+	struct sieve_result *result;
+	int ret = 0;
+
+	/* Create the interpreter */
+	testsuite_interp = sieve_interpreter_create(
+		sbin, NULL, &testsuite_execute_env, ehandler);
+	if (testsuite_interp == NULL)
+		return SIEVE_EXEC_BIN_CORRUPT;
+
+	/* Run the interpreter */
+	result = testsuite_result_get();
+	ret = sieve_interpreter_run(testsuite_interp, result);
+
+	/* Free the interpreter */
+	sieve_interpreter_free(&testsuite_interp);
+
+	return ret;
 }
 
 void testsuite_deinit(void)
