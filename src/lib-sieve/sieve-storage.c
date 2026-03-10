@@ -233,6 +233,9 @@ sieve_storage_alloc_from_class(struct sieve_instance *svinst,
 			storage->pool, "auto:", storage->type, NULL);
 	}
 
+	if (strcasecmp(script_type, SIEVE_STORAGE_TYPE_PERSONAL) == 0)
+		storage->is_personal = TRUE;
+
 	storage->event = event;
 	event_ref(event);
 
@@ -773,8 +776,8 @@ int sieve_storage_create_personal(struct sieve_instance *svinst,
 					SIEVE_STORAGE_TYPE_PERSONAL, flags,
 					&storage, error_code_r, NULL);
 	if (ret == 0) {
+		i_assert(storage->is_personal);
 		(void)sieve_storage_sync_init(storage, user);
-		storage->is_personal = TRUE;
 	} else if (*error_code_r != SIEVE_ERROR_TEMP_FAILURE &&
 		   (flags & SIEVE_STORAGE_FLAG_SYNCHRONIZING) == 0 &&
 		   (flags & SIEVE_STORAGE_FLAG_READWRITE) == 0) {
@@ -1540,6 +1543,7 @@ int sieve_storage_save_continue(struct sieve_storage_save_context *sctx)
 int sieve_storage_save_finish(struct sieve_storage_save_context *sctx)
 {
 	struct sieve_storage *storage = sctx->storage;
+	bool was_failed = sctx->failed;
 	int ret;
 
 	sieve_storage_clear_error(storage);
@@ -1549,7 +1553,7 @@ int sieve_storage_save_finish(struct sieve_storage_save_context *sctx)
 
 	i_assert(storage->v.save_finish != NULL);
 	ret = storage->v.save_finish(sctx);
-	if (ret < 0) {
+	if (ret < 0 && !was_failed) {
 		i_assert(storage->error_code != SIEVE_ERROR_NONE);
 		i_assert(storage->error != NULL);
 
@@ -1907,7 +1911,7 @@ bool sieve_storage_is_default(const struct sieve_storage *storage)
 
 bool sieve_storage_is_personal(struct sieve_storage *storage)
 {
-	return (strcasecmp(storage->type, SIEVE_STORAGE_TYPE_PERSONAL) == 0);
+	return storage->is_personal;
 }
 
 /*

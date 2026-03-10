@@ -66,8 +66,13 @@ _scan_key_section(string_t *section, const char **wcardp, const char *key_end)
 	/* Find next wildcard and resolve escape sequences */
 	str_truncate(section, 0);
 	while (*wcardp < key_end && **wcardp != '*' && **wcardp != '?') {
-		if (**wcardp == '\\')
+		if (**wcardp == '\\') {
 			(*wcardp)++;
+			if (*wcardp == key_end) {
+				str_append_c(section,'\\');
+				break;
+			}
+		}
 		str_append_c(section, **wcardp);
 		(*wcardp)++;
 	}
@@ -161,7 +166,7 @@ mcht_matches_match_key(struct sieve_match_context *mctx,
 			}
 
 			debug_printf("found wildcard '%c' at pos [%d]\n",
-				     next_wcard, (int) (wp-key));
+				     next_wcard, (int)(wp - key));
 
 			if (mvalues != NULL)
 				str_truncate(mvalue, 0);
@@ -210,7 +215,7 @@ mcht_matches_match_key(struct sieve_match_context *mctx,
 
 				/* Check if the value is still large enough */
 				slen = str_len(section);
-				if ((vp + slen) > vend) {
+				if ((vp + slen) >= vend) {
 					debug_printf("  wont match: "
 						     "value is too short\n");
 					break;
@@ -234,7 +239,7 @@ mcht_matches_match_key(struct sieve_match_context *mctx,
 				/* Add match values */
 				if (mvalues != NULL) {
 					i_assert(qp >= pvp);
-					str_append_data(mvalue, pvp, qp-pvp);
+					str_append_data(mvalue, pvp, qp - pvp);
 
 					/* Append '*' match value */
 					sieve_match_values_add(mvalues, mvalue);
@@ -311,7 +316,7 @@ mcht_matches_match_key(struct sieve_match_context *mctx,
 					const char *qp = qend - key_offset;
 
 					/* Append '*' match value */
-					str_append_data(mvalue, pvp, qp-pvp);
+					str_append_data(mvalue, pvp, qp - pvp);
 
 					/* Append any initial '?' match values
 					   (those that caused the key offset).
@@ -329,32 +334,40 @@ mcht_matches_match_key(struct sieve_match_context *mctx,
 
 			/* Scan successive '?' wildcards */
 			while (next_wcard == '?') {
+				bool match_failed_empty = FALSE;
+
 				debug_printf("next_wcard = '?'; "
 					     "need to match arbitrary character\n");
 
-				/* Add match value */
-				if (mvalues != NULL)
-					str_append_c(mchars, *vp);
+				i_assert(vp <= vend);
+				if (vp == vend)
+					match_failed_empty = TRUE;
+				else {
+					/* Add match value */
+					if (mvalues != NULL)
+						str_append_c(mchars, *vp);
 
-				vp++;
+					vp++;
 
-				/* Scan for next '?' wildcard */
-				next_wcard = _scan_key_section(subsection, &wp, kend);
-				debug_printf("found next wildcard '%c' at pos [%d] "
-					     "(fixed match)\n",
-					     next_wcard, (int) (wp-key));
+					/* Scan for next '?' wildcard */
+					next_wcard = _scan_key_section(subsection, &wp, kend);
+					debug_printf("found next wildcard '%c' at pos [%d] "
+						     "(fixed match)\n",
+						     next_wcard, (int)(wp - key));
 
-				/* Determine what we are looking for */
-				needle = str_c(subsection);
-				nend = needle + str_len(subsection);
+					/* Determine what we are looking for */
+					needle = str_c(subsection);
+					nend = needle + str_len(subsection);
 
-				debug_printf("  sub key:       '%s'\n",
-					     t_strdup_until(needle, nend));
-				debug_printf("  value remnant: '%s'\n",
-					     vp <= vend ? t_strdup_until(vp, vend) : "");
+					debug_printf("  sub key:       '%s'\n",
+						     t_strdup_until(needle, nend));
+					debug_printf("  value remnant: '%s'\n",
+						     t_strdup_until(vp, vend));
+				}
 
 				/* Try matching the needle at fixed position */
-				if ((needle == nend && next_wcard == '\0' && vp < vend) ||
+				if (match_failed_empty ||
+				    (needle == nend && next_wcard == '\0' && vp < vend) ||
 				    !cmp->def->char_match(cmp, &vp, vend, &needle, nend)) {
 
 					/* Match failed: now we have a problem. We need to
@@ -429,7 +442,8 @@ mcht_matches_match_key(struct sieve_match_context *mctx,
 			/* Add the rest of the string as match value */
 			if (mvalues != NULL) {
 				str_truncate(mvalue, 0);
-				str_append_data(mvalue, vp, vend-vp);
+				i_assert(vend >= vp);
+				str_append_data(mvalue, vp, vend - vp);
 				sieve_match_values_add(mvalues, mvalue);
 			}
 
@@ -451,14 +465,15 @@ mcht_matches_match_key(struct sieve_match_context *mctx,
 	}
 
 	/* By definition, the match is only successful if both value and key
-	   pattern are exhausted.
+	   pattern are exhausted and we're not still trying to match '?' while
+	   the value is empty.
 	 */
+	bool matched = (kp == kend && vp == vend && next_wcard != '?');
 
 	debug_printf("=== Finish ===\n");
-	debug_printf("  result: %s\n",
-		     (kp == kend && vp == vend) ? "true" : "false");
+	debug_printf("  result: %s\n", matched ? "true" : "false");
 
-	if (kp == kend && vp == vend) {
+	if (matched) {
 		/* Activate new match values after successful match */
 		if (mvalues != NULL) {
 			/* Set ${0} */
