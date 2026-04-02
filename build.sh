@@ -43,7 +43,7 @@ sudo make install-strip
 
 
 sudo cp -r $BUILD_DIRECTORY $PACK_DIRECTORY/
-sudo rm -rf $BUILD_DIRECTORY
+#sudo rm -rf $BUILD_DIRECTORY
 
 # Добавление необходимых пользователей
 #  useradd --system dovecot
