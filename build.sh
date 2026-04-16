@@ -6,7 +6,7 @@ DOVECOT_DIRECTORY=$3
 BUILD_DIRECTORY=/opt/r7-mailserver/mdaserver
 
 #Пакеты компилятора и зависимости
-apt-get update -y && apt-get install -y apt-utils && apt-get install -y gettext-base gettext openssh-client ca-certificates pkg-config wget git coreutils ed
+apt-get update -y && apt-get install -y apt-utils && apt-get install -y gettext-base gettext openssh-client ca-certificates pkg-config wget git coreutils ed python3
 
 apt-get install -y \
   build-essential make autoconf automake libtool bison flex autotools-dev \
