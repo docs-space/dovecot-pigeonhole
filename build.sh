@@ -6,9 +6,9 @@ DOVECOT_DIRECTORY=$3
 BUILD_DIRECTORY=/opt/r7-mailserver/mdaserver
 
 #Пакеты компилятора и зависимости
-sudo apt-get update -y && sudo apt-get install -y apt-utils && sudo apt-get install -y gettext-base gettext openssh-client ca-certificates pkg-config wget git coreutils ed
+apt-get update -y && apt-get install -y apt-utils && apt-get install -y gettext-base gettext openssh-client ca-certificates pkg-config wget git coreutils ed
 
-sudo apt-get install -y \
+apt-get install -y \
   build-essential make autoconf automake libtool bison flex autotools-dev \
   libssl-dev libldap2-dev libbz2-dev zlib1g-dev liblz4-dev libzstd-dev libcap-dev libsodium-dev libunwind-dev libwrap0-dev libkrb5-dev libpq-dev libsqlite3-dev libexpat1-dev \
   liblua5.3-dev libxapian-dev libstemmer-dev libsasl2-dev libicu-dev krb5-multidev libdb-dev libcurl4-gnutls-dev libexpat-dev libexttextcat-dev default-libmysqlclient-dev \
@@ -20,31 +20,31 @@ sudo apt-get install -y \
 CFLAGS="$CFLAGS -ffile-prefix-map=$PWD=." LDFLAGS="$LDFLAGS" CXXFLAGS="$CFLAGS -ffile-prefix-map=$PWD=. "
 
 # Создание директорий
-sudo mkdir -p $PACK_DIRECTORY $BUILD_DIRECTORY
+mkdir -p $PACK_DIRECTORY $BUILD_DIRECTORY
 
 #Чистка предыдущей установки, если такая была
-sudo make distclean || true
+make distclean || true
 
 #Сборка Ядра:
 
 ## Automake
 #sudo ./autogen.sh $VERSION
-sudo ./autogen.sh 2.4.2
+./autogen.sh 2.4.2
 
 ## Конфигурирование пакетов
-sudo ./configure --with-dovecot=$DOVECOT_DIRECTORY \
+./configure --with-dovecot=$DOVECOT_DIRECTORY \
 --with-managesieve=yes \
 --prefix=$BUILD_DIRECTORY \
 --exec-prefix=$BUILD_DIRECTORY
 
 ##Компоновка
-sudo make -j V=0
+make -j V=0
 
 ## Сборка
-sudo make install-strip
+make install-strip
 
 
-sudo cp -r $BUILD_DIRECTORY $PACK_DIRECTORY/
+cp -r $BUILD_DIRECTORY $PACK_DIRECTORY/
 #sudo rm -rf $BUILD_DIRECTORY
 
 # Добавление необходимых пользователей
