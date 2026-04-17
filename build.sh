@@ -14,6 +14,9 @@ apt-get install -y \
   liblua5.3-dev libxapian-dev libstemmer-dev libsasl2-dev libicu-dev krb5-multidev libdb-dev libcurl4-gnutls-dev libexpat-dev libexttextcat-dev default-libmysqlclient-dev \
   libpcre3-dev libcdb-dev liblzma-dev liblmdb-dev libunbound-dev libmagic-dev
 
+#Download Docs
+wget -nv --tries=5 --waitretry=5 --retry-connrefused -O $2/doc/pigeonhole.txz https://doc.dovecot.org/2.4.2/pigeonhole.txz
+
 #cd $2/Pack/Temp && unzip src_dovecot_*.zip && unzip r7mdaserver_*.zip -d $BUILD_DIRECTORY && cd $2
 
 #Переменная окружения:
