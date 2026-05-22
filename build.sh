@@ -32,7 +32,7 @@ make distclean || true
 
 ## Automake
 #sudo ./autogen.sh $VERSION
-./autogen.sh 2.4.2
+./autogen.sh 2.4.3
 
 ## Конфигурирование пакетов
 ./configure --with-dovecot=$DOVECOT_DIRECTORY \
