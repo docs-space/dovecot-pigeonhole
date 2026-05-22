@@ -47,7 +47,7 @@
 
 struct sieve_instance *testsuite_sieve_instance = NULL;
 char *testsuite_test_path = NULL;
-unsigned int test_failures;
+bool testsuite_silent = FALSE;
 
 unsigned int test_failures;
 
@@ -204,18 +204,22 @@ int testsuite_test_fail_cstr(const struct sieve_runtime_env *renv,
 {
 	sieve_size_t end = test_block_end;
 
-	if (str_len(test_name) == 0) {
-		if (reason == NULL || *reason == '\0')
-			printf("%2d: Test FAILED\n", test_index);
-		else
-			printf("%2d: Test FAILED: %s\n", test_index, reason);
-	} else {
-		if (reason == NULL || *reason == '\0') {
-			printf("%2d: Test '%s' FAILED\n",
-			       test_index, str_c(test_name));
+	if (!testsuite_silent) {
+		if (str_len(test_name) == 0) {
+			if (reason == NULL || *reason == '\0')
+				printf("%2d: Test FAILED\n", test_index);
+			else {
+				printf("%2d: Test FAILED: %s\n",
+				       test_index, reason);
+			}
 		} else {
-			printf("%2d: Test '%s' FAILED: %s\n",
-			       test_index, str_c(test_name), reason);
+			if (reason == NULL || *reason == '\0') {
+				printf("%2d: Test '%s' FAILED\n",
+				       test_index, str_c(test_name));
+			} else {
+				printf("%2d: Test '%s' FAILED: %s\n",
+				       test_index, str_c(test_name), reason);
+			}
 		}
 	}
 
@@ -236,11 +240,12 @@ int testsuite_test_fail_cstr(const struct sieve_runtime_env *renv,
 
 void testsuite_testcase_fail(const char *reason)
 {
-	if (reason == NULL || *reason == '\0')
-		printf("XX: Test CASE FAILED\n");
-	else
-		printf("XX: Test CASE FAILED: %s\n", reason);
-
+	if (!testsuite_silent) {
+		if (reason == NULL || *reason == '\0')
+			printf("XX: Test CASE FAILED\n");
+		else
+			printf("XX: Test CASE FAILED: %s\n", reason);
+	}
 	test_failures++;
 }
 
@@ -250,20 +255,23 @@ int testsuite_test_succeed(const struct sieve_runtime_env *renv,
 	sieve_size_t end = test_block_end;
 	int ret;
 
-	if (str_len(test_name) == 0) {
-		if (reason == NULL || str_len(reason) == 0)
-			printf("%2d: Test SUCCEEDED\n", test_index);
-		else {
-			printf("%2d: Test SUCCEEDED: %s\n",
-			       test_index, str_c(reason));
-		}
-	} else {
-		if (reason == NULL || str_len(reason) == 0) {
-			printf("%2d: Test '%s' SUCCEEDED\n",
-			       test_index, str_c(test_name));
+	if (!testsuite_silent) {
+		if (str_len(test_name) == 0) {
+			if (reason == NULL || str_len(reason) == 0)
+				printf("%2d: Test SUCCEEDED\n", test_index);
+			else {
+				printf("%2d: Test SUCCEEDED: %s\n",
+				       test_index, str_c(reason));
+			}
 		} else {
-			printf("%2d: Test '%s' SUCCEEDED: %s\n", test_index,
-				str_c(test_name), str_c(reason));
+			if (reason == NULL || str_len(reason) == 0) {
+				printf("%2d: Test '%s' SUCCEEDED\n",
+				       test_index, str_c(test_name));
+			} else {
+				printf("%2d: Test '%s' SUCCEEDED: %s\n",
+				       test_index, str_c(test_name),
+				       str_c(reason));
+			}
 		}
 	}
 
@@ -293,24 +301,32 @@ bool testsuite_testcase_result(bool expect_failure)
 {
 	if (expect_failure) {
 		if (test_failures < test_index) {
-			printf("\nFAIL: Only %d of %d tests failed "
-			       "(all expected to fail).\n\n",
-			       test_failures, test_index);
+			if (!testsuite_silent) {
+				printf("\nFAIL: Only %d of %d tests failed "
+				       "(all expected to fail).\n\n",
+				       test_failures, test_index);
+			}
 			return FALSE;
 		}
 
-		printf("\nPASS: %d tests failed (expected to fail).\n\n",
-		       (test_index == 0 ? 1 : test_index));
+		if (!testsuite_silent) {
+			printf("\nPASS: %d tests failed "
+			       "(expected to fail).\n\n",
+			       (test_index == 0 ? 1 : test_index));
+		}
 		return TRUE;
 	}
 
 	if (test_failures > 0) {
-		printf("\nFAIL: %d of %d tests failed.\n\n",
-		       test_failures, test_index);
+		if (!testsuite_silent) {
+			printf("\nFAIL: %d of %d tests failed.\n\n",
+			       test_failures, test_index);
+		}
 		return FALSE;
 	}
 
-	printf("\nPASS: %d tests succeeded.\n\n", test_index);
+	if (!testsuite_silent)
+		printf("\nPASS: %d tests succeeded.\n\n", test_index);
 	return TRUE;
 }
 
@@ -338,11 +354,10 @@ static void testsuite_tmp_dir_init(const char *tmp_path)
 
 void testsuite_tmp_dir_deinit(void)
 {
-	const char *error;
-
 	if (testsuite_tmp_dir == NULL)
 		return;
 
+	const char *error = NULL;
 	if (unlink_directory(testsuite_tmp_dir,
 			     UNLINK_DIRECTORY_FLAG_RMDIR, &error) < 0)
 		i_warning("failed to remove temporary directory '%s': %s.",

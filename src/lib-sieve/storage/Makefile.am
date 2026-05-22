@@ -1,5 +1,7 @@
 SUBDIRS = \
 	data \
 	file \
-	dict \
-	ldap
+	dict
+if BUILD_LDAP_DIR
+SUBDIRS += ldap
+endif

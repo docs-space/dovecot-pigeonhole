@@ -871,7 +871,8 @@ static int edit_mail_headers_parse(struct edit_mail *edmail)
 		if (edmail->header_fields_appended != NULL) {
 			if (edmail->header_fields_head !=
 			    edmail->header_fields_appended) {
-				edmail->header_fields_appended->prev->next = head;
+				if (edmail->header_fields_appended->prev != NULL)
+					edmail->header_fields_appended->prev->next = head;
 				head->prev = edmail->header_fields_appended->prev;
 			} else {
 				edmail->header_fields_head = head;
@@ -1168,7 +1169,7 @@ int edit_mail_headers_iterate_init(struct edit_mail *edmail,
 	} else {
 		current = (header_idx != NULL ?
 			   header_idx->last : edmail->header_fields_tail);
-		if (current->header == NULL)
+		if (current != NULL && current->header == NULL)
 			current = current->prev;
 	}
 

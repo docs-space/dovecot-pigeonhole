@@ -179,6 +179,8 @@ AS_IF([test $have_ldap = no], [
   ])
 ])
 AM_CONDITIONAL(LDAP_PLUGIN, test "$have_ldap_plugin" = "yes")
+AM_CONDITIONAL(LDAP_STORAGE, test "$have_ldap" = "yes" -a "$want_ldap" = "yes")
+AM_CONDITIONAL(BUILD_LDAP_DIR, test "$have_ldap" = "yes")
 
 dnl **
 dnl ** Settings
@@ -222,6 +224,9 @@ libsieve_headers=
 libsieve_c_files=
 non_libsieve_headers=
 non_libsieve_c_files=
+dnl Keep LDAP settings in the scan even when LDAP is disabled. The generated
+dnl dispatcher is configuration-independent; LDAP entries are protected by
+dnl STORAGE_LDAP guards copied from the source files.
 all_files=`find $srcdir/src -name '*.[[ch]]' | grep -v '/src/plugins/settings/' | grep -v '/src/managesieve' | grep -v '/test-' | xargs grep '\\(struct setting_parser_info [[a-z]]\\)\\|\\(struct service_settings [[a-z]]\\)\\|\\(<settings checks>\\)' | sed 's/:.*//' | sort | uniq`
 for file in $all_files; do
   dir=`echo "$file" | sed 's:/[[^/]]*$::'`
@@ -330,4 +335,3 @@ echo "script drivers . : file dict$scriptloc"
 if test "$not_scriptloc" != ""; then
   echo "                 :$not_scriptloc"
 fi
-

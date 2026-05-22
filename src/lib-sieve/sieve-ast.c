@@ -261,7 +261,7 @@ bool sieve_ast_extension_is_required
 		if (list->head == before) { \
 			node->prev = NULL; \
 			list->head = node; \
-		} else { \
+		} else if (before->prev != NULL) { \
 			before->prev->next = node; \
 		} \
 		node->prev = before->prev; \
@@ -280,6 +280,7 @@ bool sieve_ast_extension_is_required
 		\
 		if (items->len == 0) \
 			return TRUE; \
+		i_assert(items->head != NULL); \
 		\
 		if (list->head == NULL) { \
 			list->head = items->head; \
@@ -642,6 +643,8 @@ sieve_ast_stringlist_add_stringlist(struct sieve_ast_argument *list,
 	i_assert(list->type == SAAT_STRING_LIST);
 	i_assert(items->type == SAAT_STRING_LIST);
 
+	if (items->_value.strlist == NULL)
+		return TRUE;
 	if (list->_value.strlist == NULL) {
 		list->_value.strlist =
 			sieve_ast_arg_list_create(list->ast->pool);
